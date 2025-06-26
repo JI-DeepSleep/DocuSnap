@@ -33,6 +33,8 @@ Built with **Python**, using the following core dependencies:
 
 ### Swimlane Diagram
 
+Below is the example flow of data and control if we want to parse a document A and a form B, and use the current document database to fill form B (fill task C). 
+
 ```mermaid
 %%{init: {'theme': 'default', 'themeVariables': { 'primaryColor': '#f0f0f0'}}}%%
 sequenceDiagram
