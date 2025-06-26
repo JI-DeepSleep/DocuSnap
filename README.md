@@ -395,3 +395,17 @@ Chinese/English OCR tool for text recognition.
 # View UI/UX
 
 # Team Roster
+
+## 👥 Team Roster
+
+This project is built by a collaborative team of five, each contributing unique expertise across image processing, machine learning, UI/UX, and backend infrastructure. Below is a list of our team members and roles:
+
+| Name           | JAccount         | Task Assignment                                      | Key Strengths                                      | Sub-team                  |
+|----------------|------------------|------------------------------------------------------|----------------------------------------------------|---------------------------|
+| **Zijun Yang** | zijunyang        | PM, OCR, LLM Integration                             | Web, Server Maintenance, Library Integration       | Post Processing Sub-team  |
+| **Jingjia Peng** | shigarmouny     | OCR, LLM, UI                                         | AI Agent Development, UI/UX Design                 | Shared Across Both Teams  |
+| **Ziming Zhou** | zimingzhou_03   | Geometric Correction, Image Enhancement              | ML Systems, Operating Systems, Distributed Systems | Image Processing Sub-team |
+| **Minyang Qu**  | 2424922674      | Data Pipeline Development                            | Data Science, SQL                                  | Post Processing Sub-team  |
+| **Huijie Tang** | tanghuijie      | ML-based Enhancement and Preprocessing               | Machine Learning                                   | Image Processing Sub-team |
+
+> 🔍 *At the end of term, we'll update this section with detailed contributions. If this GitHub repo is made public, visitors (and potential employers) will see our individual impact on the project clearly.*
