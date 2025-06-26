@@ -33,8 +33,6 @@ Built with **Python**, using the following core dependencies:
 
 ### Swimlane Diagram
 
-If the following diagram is not shown properly, you can try [Markdown Mermaid Live Editor](https://mermaid.live/edit#pako:eNrtWI9vozYU_lcsT1GoxhrygzRBU6WSrLdpt1212w_phBS54CasgDnj3F0uyv--ZzAEQpKmTXLStqOqwPZ737M_P38PssQu8yi2cKOx9CNfWGjZFDMa0qaFmh59IPNANHWU9f1JuE_uA5rA4BI1Y-6HhC9GLGBcmn_zYMi_5mq1ajScKKHv5zRy6dgnU05CJ0JwxYQL3_VjEgn0R0I5Ikl2v-UsEjTyvr_n15rsaSbobsYielF3HJGQcvKKBAHlC4mQdbRUzyEQryhL5y294bmVNg5x_JFEXpDNe8zceUgj0bplPMwHDsG4_WFsS4B8zWhsH-JmE_dRWoNn_viW8g-U103_Yvwxm2RumfVs49Kd0YxD-bAL8M3oN2kkb7tMXr_-RZq8m_nxXDacKLNpNAqm0A2648ylSeJH02yUU1cgPr0nWscw9E4X_k1TNy5NRYC8IiYoYhA0TRWrDKdlW18ylibfXV9XcsRCLonFnNOfQjKlmoPddNTBJb-KAwBkoTj5mPrU8PMEAmjG5SKgI6SCL7TcpYSdGxewyod6T4HTaEbgDKWtRKu67Qug_Hbgq1y1UJztRk6oVnEr4SuHErzLFzFMBDwnNzpKZqRj9ic3tUgq_SzUIrHfUuEmnoqXZn3uqyNfRtWRG_gwNvG90gTWTwqxmErH6KAb16VyNkiLi_S62OaSnQILvRWQuGhtjMSMU-Jtiwcpju5YEEgrYKGWwPkVMBbnhtWRl9KxjYf6ktJzqwBd-dwC2VUiWCCsd0hHDs7jVfJ_fQ4AozzVntFDvzJQLTaPvH0zOXg_5EU3saqtbKMAFBRHLY65vEU_CU5cUbUFk9LWCrDZgQWipLCCIGzRiPvurGoKFiWoB9B1ImAdk78TFu0ArfOfCMbpi_jPuc8n0DHaaASJCVNYG1aYO-7Abcuw02dWLaNA6dGbn5HmEUEu9p3szIzTBN5C6hIvy6iFEvKBFvq1ngtoMdnA38qQG1DCdy3pQFr2YjyflhSOelb7AG42bdPkKOpu-mJi76u5qt7K-_6aq6A0VSCfW3CnWf_XiqtOpKSzWm1lnkjBsSsc7S28dpFl9oE6IAOUNcD-_xbdLVSco-Da-b5-LbZfvNju5v5shfbArDptNp2_wEq5GgOYVmiUjo6trvYJqusz-ThhZfWDAP1Okkc0qtVUVU_l9-wTNXUT5On0Ao9NKvKXi4ncED09R5ONvflvC3mNk1PIt0r0SZZo3wLJ3r1qyOSHYQj7b9D0Z-swrAtEOD1UR4nwyxg8nzLvS5MvkB7nFel5DDDFd1Aq1esPkGwweZFY713oMQp-QgaPlHWs4yn3PWwJPqc6ho-SkMgmXkoTB6e_fTvYkh9yhD862IlW4BOT6B1jYe7G2Xw6w9YDCRJoqf3IfvouTCAY5SOQAYGtfi-FwNYSf8JW1xxedrq9q55pmEa3PRx2dbzA1tWlOWib7WGn1233jSuzv9Lx5zRo57LTHoJXd3g1GAzag25_9Q_RpC2R).
-
 ```mermaid
 %%{init: {'theme': 'default', 'themeVariables': { 'primaryColor': '#f0f0f0'}}}%%
 sequenceDiagram
@@ -59,18 +57,17 @@ sequenceDiagram
         User->>GeoColor: enhanceColors(correctedImage)
         GeoColor->>User: enhancedImage
         User->>Handler: processDocument(enhancedImage)
-        Handler->>User: encryptedDoc_A, sha256_A
-        User->>Backend: /api/process_document<br>(sha256_A, image, client_id)
+        Handler->>Backend: /api/process_document<br>(sha256_A, image, client_id)
         
-        Backend->>User: 202 Accepted (processing)
+        Backend->>Handler: 202 Accepted (processing)
         Backend->>Worker: Start processing thread
         
         par Polling and Processing
             loop Polling
-                User->>Backend: /api/process_document<br>(sha256_A, client_id)
+                Handler->>Backend: /api/process_document<br>(sha256_A, client_id)
                 Backend->>Cache: /api/cache/query<br>(client_id, sha256_A, "document")
                 Cache->>Backend: 404 Not Found
-                Backend->>User: 202 Accepted (processing)
+                Backend->>Handler: 202 Accepted (processing)
             end
             
             Worker->>OCR: /api/ocr/extract
@@ -81,16 +78,18 @@ sequenceDiagram
             Cache->>Worker: 201 Created
         end
         
-        User->>Backend: /api/process_document<br>(sha256_A, client_id)
+        Handler->>Backend: /api/process_document<br>(sha256_A, client_id)
         Backend->>Cache: /api/cache/query<br>(client_id, sha256_A, "document")
         Cache->>Backend: 200 OK (data)
-        Backend->>User: 200 OK (result)
-        User->>FEDB: saveDocument(sha256_A, metadata)
-        User->>Backend: /api/clear<br>(client_id, sha256_A)
+        Backend->>Handler: 200 OK (result)
+        Handler->>FEDB: saveDocument(sha256_A, metadata)
+        Handler->>Backend: /api/clear<br>(client_id, sha256_A)
         Backend->>Cache: /api/cache/clear<br>(client_id, sha256_A, "document")
         Cache->>Backend: 200 OK (cleared:1)
-        Backend->>User: 200 OK (cleared:1)
+        Backend->>Handler: 200 OK (cleared:1)
+        Handler->>User: processComplete
     end
+
 
     %% Form B Processing
     rect rgba(230,255,230,0.5)
@@ -102,18 +101,17 @@ sequenceDiagram
         User->>GeoColor: enhanceColors(correctedImage)
         GeoColor->>User: enhancedImage
         User->>Handler: processForm(enhancedImage, "formB")
-        Handler->>User: encryptedDoc_B, sha256_B
-        User->>Backend: /api/process_form<br>(sha256_B, image, client_id)
+        Handler->>Backend: /api/process_form<br>(sha256_B, image, client_id)
         
-        Backend->>User: 202 Accepted (processing)
+        Backend->>Handler: 202 Accepted (processing)
         Backend->>Worker: Start processing thread
         
         par Polling and Processing
             loop Polling
-                User->>Backend: /api/process_form<br>(sha256_B, client_id)
+                Handler->>Backend: /api/process_form<br>(sha256_B, client_id)
                 Backend->>Cache: /api/cache/query<br>(client_id, sha256_B, "form")
                 Cache->>Backend: 404 Not Found
-                Backend->>User: 202 Accepted (processing)
+                Backend->>Handler: 202 Accepted (processing)
             end
             
             Worker->>OCR: /api/ocr/extract
@@ -124,31 +122,33 @@ sequenceDiagram
             Cache->>Worker: 201 Created
         end
         
-        User->>Backend: /api/process_form<br>(sha256_B, client_id)
+        Handler->>Backend: /api/process_form<br>(sha256_B, client_id)
         Backend->>Cache: /api/cache/query<br>(client_id, sha256_B, "form")
         Cache->>Backend: 200 OK (data)
-        Backend->>User: 200 OK (result)
-        User->>FEDB: saveFormData("formB", data)
-        User->>Backend: /api/clear<br>(client_id, sha256_B)
+        Backend->>Handler: 200 OK (result)
+        Handler->>FEDB: saveFormData("formB", data)
+        Handler->>Backend: /api/clear<br>(client_id, sha256_B)
         Backend->>Cache: /api/cache/clear<br>(client_id, sha256_B, "form")
         Cache->>Backend: 200 OK (cleared:1)
-        Backend->>User: 200 OK (cleared:1)
+        Backend->>Handler: 200 OK (cleared:1)
+        Handler->>User: processComplete
     end
 
     %% Fill Task C
     rect rgba(255,230,200,0.5)
         note over User: Fill Task C
-        User->>Backend: /api/process_fill<br>(client_id, document_data, form_data)
+        User->>Handler:fillForm("formB")
+        Handler->>Backend: /api/process_fill<br>(client_id, document_data, form_data)
         
-        Backend->>User: 202 Accepted (processing)
+        Backend->>Handler: 202 Accepted (processing)
         Backend->>Worker: Start processing thread
         
         par Polling and Processing
             loop Polling
-                User->>Backend: /api/process_fill<br>(client_id)
+                Handler->>Backend: /api/process_fill<br>(client_id)
                 Backend->>Cache: /api/cache/query<br>(client_id, "formB_sha256+docdb_sha256", "fill")
                 Cache->>Backend: 404 Not Found
-                Backend->>User: 202 Accepted (processing)
+                Backend->>Handler: 202 Accepted (processing)
             end
             
             Worker->>LLM: /api/llm/enrich
@@ -157,15 +157,16 @@ sequenceDiagram
             Cache->>Worker: 201 Created
         end
         
-        User->>Backend: /api/process_fill<br>(client_id)
+        Handler->>Backend: /api/process_fill<br>(client_id)
         Backend->>Cache: /api/cache/query<br>(client_id, "formB_sha256+docdb_sha256", "fill")
         Cache->>Backend: 200 OK (data)
-        Backend->>User: 200 OK (result)
-        User->>FEDB: updateDocumentData(sha256_A, updates)
-        User->>Backend: /api/clear<br>(client_id, "formB_sha256+docdb_sha256")
+        Backend->>Handler: 200 OK (result)
+        Handler->>FEDB: updateDocumentData(sha256_A, updates)
+        Handler->>Backend: /api/clear<br>(client_id, "formB_sha256+docdb_sha256")
         Backend->>Cache: /api/cache/clear<br>(client_id, "formB_sha256+docdb_sha256", "fill")
         Cache->>Backend: 200 OK (cleared:1)
-        Backend->>User: 200 OK (cleared:1)
+        Backend->>Handler: 200 OK (cleared:1)
+        Handler->>User: processComplete
     end
 ```
 
@@ -205,9 +206,16 @@ function processDocument(enhancedImage: Image): { encryptedDoc: string, sha256: 
 #### Form Handler
 ```typescript
 function processForm(enhancedImage: Image, formType: string): { encryptedDoc: string, sha256: string }
+function fillForm(formId: string): JSON
 ```
+`processForm`:
+
 - Processes structured forms using DB templates
 - Returns encrypted document and SHA256 hash
+
+`fillForm`:
+
+- Fill the given form
 
 #### Frontend Database
 ```typescript
