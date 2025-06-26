@@ -4,68 +4,195 @@
 
 # APIs and Controller
 
-**Request Parameters**
-| Key        | Location       | Type   | Description  |
-| ---------- | -------------- | ------ | ------------ |
-| `username` | Session Cookie | String | Current User |
+### 1. Frontend Modules (Function Calls)
+Internal frontend APIs via function calls.
 
-**Response Codes**
-| Code              | Description        |
-| ----------------- | ------------------ |
-| `200 OK`          | Success            |
-| `400 Bad Request` | Invalid parameters |
+#### Camera/Gallery Module
+```typescript
+function captureImage(source: "camera" | "gallery"): Image
+```
+- Captures/selects image from device camera or gallery
+- Returns raw image object
 
-**Returns**
+#### Geometric Correction
+```typescript
+function correctGeometry(image: Image): Image
+```
+- Applies perspective correction and deskewing
+- Returns geometrically corrected image
 
-*If no user is logged in or no posts created by user*
-| Key             | Location | Type                      | Description                                  |
-| --------------- | -------- | ------------------------- | -------------------------------------------- |
-| `popular_songs` | JSON     | List of Spotify Track IDs | Top 25 songs on Spotify in the United States |
+#### Color Enhancement
+```typescript
+function enhanceColors(image: Image): Image
+```
+- Optimizes contrast, brightness and color balance
+- Returns color-enhanced image
 
-*For logged-in users with 1 or more posts created*
-| Key                         | Location | Type                      | Description                                                                                             |
-| --------------------------- | -------- | ------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `attribute_recommendations` | JSON     | List of Spotify Track IDs | Attribute-based recommendations (random genres)                                                         |
-| `genre_recommendations`     | JSON     | List of Spotify Track IDs | Attribute and genre-based recommendations based on user's favorite genres                               |
-| `artist_recommendations`    | JSON     | List of Spotify Track ID  | Attribute and artist-based recommendations based on user's favorite artists                             |
-| `attribute_error`           | JSON     | Dictionary                | contains the average error % for each attribute between recommendation and the user's attribute vector. |
+#### Document Handler
+```typescript
+function processDocument(enhancedImage: Image): { encryptedDoc: string, sha256: string }
+```
+- Processes generic documents
+- Returns RSA-encrypted document and SHA256 hash
 
-**Example**
-~~~ 
-curl -b cookies.txt -c cookies.txt -X GET https://OUR_SERVER/recommendations/'
+#### Form Handler
+```typescript
+function processForm(enhancedImage: Image, formType: string): { encryptedDoc: string, sha256: string }
+```
+- Processes structured forms using DB templates
+- Returns encrypted document and SHA256 hash
 
-{
-    "attribute_error": {
-        "acousticness": 0.1342,
-        "danceability": 0.2567,
-        "energy": 0.1144,
-        "instrumentalness": 0.021,
-        "liveness": 0.0324,
-        "loudness": 0.0084,
-        "speechiness": 0.0528,
-        "tempo": 0.0446,
-        "valence": 0.1538
-    },
-    "attribute_recommendations": [
-        "spotify:track:3joo84oco9CD4dBsKNWRRW",
-        "spotify:track:5DxlyLbSTkkKjJPGCoMo1O",
-        ...
-    ],
-    "genre_recommendations": [
-        "spotify:track:4MzXwWMhyBbmu6hOcLVD49",
-        "spotify:track:0bYg9bo50gSsH3LtXe2SQn",
-        ...
-    ],
-    "artist_recommendations": [
-        "spotify:track:2EjXfH91m7f8HiJN1yQg97",
-        "spotify:track:5o8EvVZzvB7oTvxeFB55UJ",
-        ...
-    ],
-    "url": "/recommendations/"
-}
-~~~
+#### Frontend Database
+```typescript
+// Document storage
+function saveDocument(sha256: string, metadata: JSON): boolean
+function getDocument(sha256: string): Document
+function updateDocumentData(sha256: string, updates: JSON): boolean
+
+// Form data storage
+function saveFormData(formId: string, data: JSON): boolean
+function getFormData(formId: string): JSON
+```
+
+### 2. Backend Server (Flask)
+Main entry point for processing requests and status checks.
+
+#### Endpoint: `/api/process_document`
+| **Request Parameters** | | ||
+| ---------------------- | ----------- | ----------------- | -------------------------------------------- |
+| `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier |
+| `sha256_key` | Body (JSON) | `String`| **Required** SHA256 hash of the document |
+| `image`| Body (JSON) | `String` (Base64) | **Optional** RSA-encrypted image data|
+| `encryption_key` | Body (JSON) | `String`| **Optional** User encryption key for results |
+
+**Validation Rules**:
+- If `image` is provided:
+1. `encryption_key` must be present (else `400`)
+2. Backend decrypts image using its private RSA key
+3. SHA256 of decrypted image must match `sha256_key` (else `400`)
+
+| **Response Codes** | |
+| ------------------ | ------------------------- |
+| `200 OK` | Result available|
+| `202 Accepted` | Processing in progress|
+| `400 Bad Request`| Invalid input/missing key |
+| `404 Not Found`| SHA256 not recognized |
+| `500 Server Error` | Internal processing error |
+
+**Returns** (Case 1: Result Available):
+| **Key**| **Type** | **Description** |
+| -------- | -------- | ------------------------- |
+| `status` | `String` | `"complete"`|
+| `result` | `String` | Encrypted with user's key |
+
+**Returns** (Case 2: Processing In Progress):
+| **Key**| **Type** | **Description** |
+| -------- | -------- | --------------- |
+| `status` | `String` | `"processing"`|
+
+**Returns** (Case 3: Error State):
+| **Key**| **Type** | **Description**|
+| -------- | -------- | -------------------------------------------------- |
+| `status` | `String` | `"error_processing"` or `"error_sha256_not_found"` |
+| `detail` | `String` | Error description|
+
+#### Endpoint: `/api/clear`
+| **Request Parameters** | | | |
+| ---------------------- | ----------- | --------------- | --------------------------------------- |
+| `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier|
+| `sha256_key` | Body (JSON) | `String`| **Optional** Specific document to clear |
+
+| **Response Codes** ||
+| ------------------ | -------------------- |
+| `200 OK` | Clearance successful |
+| `400 Bad Request`| Missing client_id|
+| `500 Server Error` | Clearance failed |
+
+**Returns**:
+| **Key** | **Type**| **Description** |
+| --------- | --------- | --------------------------------------- |
+| `cleared` | `Integer` | Number of entries cleared |
+| `status`| `String`| `"all_cleared"` or `"specific_cleared"` |
+
+### 3. Cache Server(Flask+SQLite)
+Stores encrypted processing results. Uses composite keys: `(client_id, sha256_key)`.
+
+#### Endpoint: `/api/cache/query`
+| **Request Parameters** | | ||
+| ---------------------- | ----------- | --------------- | -------------------------- |
+| `client_id`| Query Param | `String` (UUID) | Client identifier|
+| `sha256_key` | Query Param | `String`| SHA256 key of the document |
+
+| **Response Codes** | |
+| ------------------ | ------------------- |
+| `200 OK` | Cache entry found |
+| `404 Not Found`| Cache entry missing |
+
+**Returns** (Success):
+| **Key** | **Type** | **Description**|
+| ------- | -------- | ---------------- |
+| `data`| `String` | Encrypted result |
+
+#### Endpoint: `/api/cache/store`
+| **Request Parameters** | | ||
+| ---------------------- | ----------- | --------------- | -------------------------- |
+| `client_id`| Body (JSON) | `String` (UUID) | Client identifier|
+| `sha256_key` | Body (JSON) | `String`| SHA256 key of the document |
+| `data` | Body (JSON) | `String`| Encrypted result to store|
+
+| **Response Codes** ||
+| ------------------ | ------------------ |
+| `201 Created`| Cache entry stored |
+
+**Returns**: Empty body
+
+#### Endpoint: `/api/cache/clear`
+| **Request Parameters** | | | |
+| ---------------------- | ----------- | --------------- | --------------------------------------- |
+| `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier|
+| `sha256_key` | Body (JSON) | `String`| **Optional** Specific document to clear |
+
+| **Response Codes** ||
+| ------------------ | -------------------- |
+| `200 OK` | Clearance successful |
+
+**Returns**:
+| **Key** | **Type**| **Description** |
+| --------- | --------- | ------------------------- |
+| `cleared` | `Integer` | Number of entries cleared |
+
+### 4. OCR Server(CnOCR)
+Performs text extraction.
+
+#### Endpoint: `/api/ocr/extract`
+| **Request Parameters** | | ||
+| ---------------------- | ----------- | ----------------- | ---------------------------- |
+| `image_data` | Body (JSON) | `String` (Base64) | Decrypted image from backend |
+
+| **Response Codes** ||
+| ------------------ | -------------- |
+| `200 OK` | Text extracted |
+
+**Returns**:
+| **Key** | **Type** | **Description**|
+| ------- | -------- | ------------------ |
+| `text`| `String` | Extracted raw text |
 
 ## Third-Party SDKs
+
+### 1. LLM API Provider (Zhipu)
+Format OCR data using LLM.
+- **API Documentation**:
+[GLM-4](https://bigmodel.cn/dev/api/normal-model/glm-4)
+[GLM-Z1](https://bigmodel.cn/dev/api/Reasoning-models/glm-z1)
+
+### 2. CnOCR
+
+Chinese/English OCR tool for text recognition. 
+
+- **API Documentation:**
+
+  [CnOCR](https://github.com/breezedeus/CnOCR/blob/master/README_en.md)
 
 # View UI/UX
 
