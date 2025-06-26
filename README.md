@@ -31,7 +31,7 @@ Built with **Python**, using the following core dependencies:
 
 # Model and Engine
 
-#### Swimlane Diagram
+### Swimlane Diagram
 
 ```mermaid
 %%{init: {'theme': 'default', 'themeVariables': { 'primaryColor': '#f0f0f0'}}}%%
