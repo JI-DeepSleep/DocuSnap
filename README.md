@@ -31,6 +31,136 @@ Built with **Python**, using the following core dependencies:
 
 # Model and Engine
 
+#### Swimlane Diagram
+
+```mermaid
+%%{init: {'theme': 'default', 'themeVariables': { 'primaryColor': '#f0f0f0'}}}%%
+sequenceDiagram
+    participant User as User Frontend<br>(User's Phone)
+    participant CameraGallery as Camera/Gallery<br>(User's Phone)
+    participant GeoColor as Geo/Color<br>(User's Phone)
+    participant Handler as Document/Form Handler<br>(User's Phone)
+    participant FEDB as Frontend DB<br>(User's Phone)
+    participant Backend as Backend Server
+    participant Worker as Backend Worker
+    participant Cache as Cache Server
+    participant OCR as OCR Server
+    participant LLM as Zhipu LLM
+
+    %% Document A Processing
+    rect rgba(200,230,255,0.5)
+        note over User: Document A (Camera)
+        User->>CameraGallery: captureImage("camera")
+        CameraGallery->>User: rawImage
+        User->>GeoColor: correctGeometry(rawImage)
+        GeoColor->>User: correctedImage
+        User->>GeoColor: enhanceColors(correctedImage)
+        GeoColor->>User: enhancedImage
+        User->>Handler: processDocument(enhancedImage)
+        Handler->>User: encryptedDoc_A, sha256_A
+        User->>Backend: /api/process_document<br>(sha256_A, image, client_id)
+        
+        Backend->>User: 202 Accepted (processing)
+        Backend->>Worker: Start processing thread
+        
+        par Polling and Processing
+            loop Polling
+                User->>Backend: /api/process_document<br>(sha256_A, client_id)
+                Backend->>Cache: /api/cache/query<br>(client_id, sha256_A, "document")
+                Cache->>Backend: 404 Not Found
+                Backend->>User: 202 Accepted (processing)
+            end
+            
+            Worker->>OCR: /api/ocr/extract
+            OCR->>Worker: text
+            Worker->>LLM: /api/llm/enrich
+            LLM->>Worker: formatted_json
+            Worker->>Cache: /api/cache/store<br>(client_id, sha256_A, "document")
+            Cache->>Worker: 201 Created
+        end
+        
+        User->>Backend: /api/process_document<br>(sha256_A, client_id)
+        Backend->>Cache: /api/cache/query<br>(client_id, sha256_A, "document")
+        Cache->>Backend: 200 OK (data)
+        Backend->>User: 200 OK (result)
+        User->>FEDB: saveDocument(sha256_A, metadata)
+        User->>Backend: /api/clear<br>(client_id, sha256_A)
+        Backend->>Cache: /api/cache/clear<br>(client_id, sha256_A, "document")
+    end
+
+    %% Form B Processing
+    rect rgba(230,255,230,0.5)
+        note over User: Form B (Gallery)
+        User->>CameraGallery: captureImage("gallery")
+        CameraGallery->>User: rawImage
+        User->>GeoColor: correctGeometry(rawImage)
+        GeoColor->>User: correctedImage
+        User->>GeoColor: enhanceColors(correctedImage)
+        GeoColor->>User: enhancedImage
+        User->>Handler: processForm(enhancedImage, "formB")
+        Handler->>User: encryptedDoc_B, sha256_B
+        User->>Backend: /api/process_form<br>(sha256_B, image, client_id)
+        
+        Backend->>User: 202 Accepted (processing)
+        Backend->>Worker: Start processing thread
+        
+        par Polling and Processing
+            loop Polling
+                User->>Backend: /api/process_form<br>(sha256_B, client_id)
+                Backend->>Cache: /api/cache/query<br>(client_id, sha256_B, "form")
+                Cache->>Backend: 404 Not Found
+                Backend->>User: 202 Accepted (processing)
+            end
+            
+            Worker->>OCR: /api/ocr/extract
+            OCR->>Worker: text
+            Worker->>LLM: /api/llm/enrich
+            LLM->>Worker: formatted_json
+            Worker->>Cache: /api/cache/store<br>(client_id, sha256_B, "form")
+            Cache->>Worker: 201 Created
+        end
+        
+        User->>Backend: /api/process_form<br>(sha256_B, client_id)
+        Backend->>Cache: /api/cache/query<br>(client_id, sha256_B, "form")
+        Cache->>Backend: 200 OK (data)
+        Backend->>User: 200 OK (result)
+        User->>FEDB: saveFormData("formB", data)
+        User->>Backend: /api/clear<br>(client_id, sha256_B)
+        Backend->>Cache: /api/cache/clear<br>(client_id, sha256_B, "form")
+    end
+
+    %% Fill Task C
+    rect rgba(255,230,200,0.5)
+        note over User: Fill Task C
+        User->>Backend: /api/process_fill<br>(client_id, document_data, form_data)
+        
+        Backend->>User: 202 Accepted (processing)
+        Backend->>Worker: Start processing thread
+        
+        par Polling and Processing
+            loop Polling
+                User->>Backend: /api/process_fill<br>(client_id)
+                Backend->>Cache: /api/cache/query<br>(client_id, "fillC", "fill")
+                Cache->>Backend: 404 Not Found
+                Backend->>User: 202 Accepted (processing)
+            end
+            
+            Worker->>LLM: /api/llm/enrich
+            LLM->>Worker: filled_form
+            Worker->>Cache: /api/cache/store<br>(client_id, "fillC", "fill")
+            Cache->>Worker: 201 Created
+        end
+        
+        User->>Backend: /api/process_fill<br>(client_id)
+        Backend->>Cache: /api/cache/query<br>(client_id, "fillC", "fill")
+        Cache->>Backend: 200 OK (data)
+        Backend->>User: 200 OK (result)
+        User->>FEDB: updateDocumentData(sha256_A, updates)
+        User->>Backend: /api/clear<br>(client_id, "fillC")
+        Backend->>Cache: /api/cache/clear<br>(client_id, "fillC", "fill")
+    end
+```
+
 # APIs and Controller
 
 ### 1. Frontend Modules (Function Calls)
