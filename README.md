@@ -86,6 +86,8 @@ sequenceDiagram
         User->>FEDB: saveDocument(sha256_A, metadata)
         User->>Backend: /api/clear<br>(client_id, sha256_A)
         Backend->>Cache: /api/cache/clear<br>(client_id, sha256_A, "document")
+        Cache->>Backend: 200 OK (cleared:1)
+        Backend->>User: 200 OK (cleared:1)
     end
 
     %% Form B Processing
@@ -127,6 +129,8 @@ sequenceDiagram
         User->>FEDB: saveFormData("formB", data)
         User->>Backend: /api/clear<br>(client_id, sha256_B)
         Backend->>Cache: /api/cache/clear<br>(client_id, sha256_B, "form")
+        Cache->>Backend: 200 OK (cleared:1)
+        Backend->>User: 200 OK (cleared:1)
     end
 
     %% Fill Task C
@@ -140,24 +144,26 @@ sequenceDiagram
         par Polling and Processing
             loop Polling
                 User->>Backend: /api/process_fill<br>(client_id)
-                Backend->>Cache: /api/cache/query<br>(client_id, "fillC", "fill")
+                Backend->>Cache: /api/cache/query<br>(client_id, "formB_sha256+docdb_sha256", "fill")
                 Cache->>Backend: 404 Not Found
                 Backend->>User: 202 Accepted (processing)
             end
             
             Worker->>LLM: /api/llm/enrich
             LLM->>Worker: filled_form
-            Worker->>Cache: /api/cache/store<br>(client_id, "fillC", "fill")
+            Worker->>Cache: /api/cache/store<br>(client_id, "formB_sha256+docdb_sha256", "fill")
             Cache->>Worker: 201 Created
         end
         
         User->>Backend: /api/process_fill<br>(client_id)
-        Backend->>Cache: /api/cache/query<br>(client_id, "fillC", "fill")
+        Backend->>Cache: /api/cache/query<br>(client_id, "formB_sha256+docdb_sha256", "fill")
         Cache->>Backend: 200 OK (data)
         Backend->>User: 200 OK (result)
         User->>FEDB: updateDocumentData(sha256_A, updates)
-        User->>Backend: /api/clear<br>(client_id, "fillC")
-        Backend->>Cache: /api/cache/clear<br>(client_id, "fillC", "fill")
+        User->>Backend: /api/clear<br>(client_id, "formB_sha256+docdb_sha256")
+        Backend->>Cache: /api/cache/clear<br>(client_id, "formB_sha256+docdb_sha256", "fill")
+        Cache->>Backend: 200 OK (cleared:1)
+        Backend->>User: 200 OK (cleared:1)
     end
 ```
 
