@@ -1,5 +1,34 @@
 # Getting Started
 
+This section outlines how to build and run the project, along with the **direct** third-party tools, libraries, SDKs, and APIs used.  
+
+### **Front-End (Android)**  
+Built with **Android Studio** targeting **Android 13 (API Level 33)**.  
+
+#### **Dependencies**  
+- **Encryption**:  
+  - [Bouncy Castle](https://www.bouncycastle.org/) – Cryptographic algorithms.  
+  - [Android Keystore System](https://developer.android.com/training/articles/keystore) – Secure key storage.  
+- **Networking**:  
+  - [OkHttp](https://square.github.io/okhttp/) – Underlying HTTP/2 support.  
+
+### **Back-End (Flask)**  
+Built with **Python**, using the following core dependencies:  
+
+#### **Dependencies**  
+- **Web Framework**:  
+  - [Flask](https://flask.palletsprojects.com/) – Lightweight WSGI server.  
+  - [Gunicorn](https://gunicorn.org/) – Production-grade WSGI HTTP server.  
+- **Database**:  
+  - [SQLite](https://www.sqlite.org/index.html) – Embedded relational database.  
+- **OCR & AI Tools**:  
+  - [CnOcr](https://github.com/breezedeus/cnocr) – Chinese and English OCR library.  
+  - [Zhipu AI API](https://open.bigmodel.cn/) – Integration for generative AI tasks.  
+
+### **Notes**  
+- **Android Setup**: Ensure **Android SDK 33** is configured in Android Studio.  
+- **Back-End Setup**: Use `pip install -r requirements.txt` .  
+
 # Model and Engine
 
 # APIs and Controller
