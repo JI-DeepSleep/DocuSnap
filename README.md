@@ -143,7 +143,25 @@ Main entry point for processing requests and status checks.
 | `cleared` | `Integer` | Number of entries cleared |
 | `status`| `String`| `"all_cleared"` or `"specific_cleared"` |
 
+#### Endpoint: `/api/process_form`
+
+The API interface is almost the same as `/api/process_document`, except that it is used for form parsing. 
+
+The differences are:
+
+- The results are not an array of key-value pairs, but an array of name of the fields that need to be filled. 
+
+#### Endpoint: `/api/process_fill`
+
+The API interface is almost the same as `/api/process_document`, except that it is used for filling a form given a document db. 
+
+The differences are:
+
+- The input argument `image` is replaced with two encrypted JSON object: `document_data` and `form_data`, which are JSON objects after decryption. 
+- The results are an array of key-value pairs, with key being fields to be filled in `form_data` and value being either information found in `document_data` or null if cannot be determined. 
+
 ### 3. Cache Server(Flask+SQLite)
+
 Stores encrypted processing results. Uses composite keys: `(client_id, sha256_key)`.
 
 #### Endpoint: `/api/cache/query`
@@ -151,6 +169,7 @@ Stores encrypted processing results. Uses composite keys: `(client_id, sha256_ke
 | ---------------------- | ----------- | --------------- | -------------------------- |
 | `client_id`| Query Param | `String` (UUID) | Client identifier|
 | `sha256_key` | Query Param | `String`| SHA256 key of the document |
+| `type` | Query Param | `String` (document/form/fill) |  |
 
 | **Response Codes** | |
 | ------------------ | ------------------- |
@@ -167,6 +186,7 @@ Stores encrypted processing results. Uses composite keys: `(client_id, sha256_ke
 | ---------------------- | ----------- | --------------- | -------------------------- |
 | `client_id`| Body (JSON) | `String` (UUID) | Client identifier|
 | `sha256_key` | Body (JSON) | `String`| SHA256 key of the document |
+| `type` | Query Param | `String` (document/form/fill) |  |
 | `data` | Body (JSON) | `String`| Encrypted result to store|
 
 | **Response Codes** ||
@@ -180,6 +200,7 @@ Stores encrypted processing results. Uses composite keys: `(client_id, sha256_ke
 | ---------------------- | ----------- | --------------- | --------------------------------------- |
 | `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier|
 | `sha256_key` | Body (JSON) | `String`| **Optional** Specific document to clear |
+| `type` | Query Param | `String` (document/form/fill) |  |
 
 | **Response Codes** ||
 | ------------------ | -------------------- |
