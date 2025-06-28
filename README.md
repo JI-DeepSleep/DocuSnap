@@ -27,7 +27,8 @@ Built with **Python**, using the following core dependencies:
 
 ### **Notes**  
 - **Android Setup**: Ensure **Android SDK 33** is configured in Android Studio.  
-- **Back-End Setup**: Use `pip install -r requirements.txt` .  
+- **Back-End Setup**: Use `pip install -r requirements.txt` 
+- The frontend stack has not been finalized. The backend stack won't be far from this version, but we're considering adding support for edge processing (move everything except LLM to the phone) for better security and privacy.   
 
 # Model and Engine
 
