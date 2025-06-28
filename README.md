@@ -32,7 +32,11 @@ Built with **Python**, using the following core dependencies:
 
 # Model and Engine
 
-### Data and Control Flow Diagram
+### Entity Diagram
+
+We present the entity relationship in our app through a swimlane diagram because we find it to be the most informative. Two block diagrams that best fit the assignment requirement but are less informative are also shown below. 
+
+#### Swimlane Diagram
 
 Below is the example flow of data and control if we want to parse a document A and a form B, and use the current document database to fill form B (fill task C). 
 
@@ -172,6 +176,12 @@ sequenceDiagram
         Handler->>User: processComplete
     end
 ```
+
+#### Block Diagrams
+
+![image-20250628173951645](./README.assets/image-20250628173951645.png)
+
+![image-20250628173935873](./README.assets/image-20250628173935873.png)
 
 # APIs and Controller
 
