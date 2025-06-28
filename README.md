@@ -32,9 +32,38 @@ Built with **Python**, using the following core dependencies:
 
 # Model and Engine
 
-### Entity Diagram
+### Engine Components
 
-We present the entity relationship in our app through a swimlane diagram because we find it to be the most informative. Two block diagrams that best fit the assignment requirement but are less informative are also shown below. 
+1. User Frontend
+   Handles UI interactions on the user's device.
+2. Camera/Gallery
+   Accesses device camera and photo storage.
+3. Geo/Color Processor
+   Performs image correction and enhancement.
+4. Document/Form Handler
+   Manages processing workflows and local data.
+5. Frontend DB
+   Stores processed documents/forms on device.
+6. Backend Server
+   Routes requests and manages tasks.
+7. Backend Worker
+   Executes asynchronous jobs.
+8. Cache Server
+   Temporary storage for processing results.
+9. OCR Server
+   Handles text extraction from images.
+10. Zhipu LLM (External Service)
+    Provides AI enrichment via API.
+
+#### Component Integration
+
+- Device components (1-5) use Android OS capabilities
+- Backend services (6-9) run on our infrastructure
+- Zhipu LLM (10) is an external dependency
+
+### Data and Control Flow Diagram
+
+We present the entity relationship in our app mainly through a swimlane diagram because we find it to be the most informative. Two block diagrams that best fit the assignment requirement but are less informative are also shown below. 
 
 #### Swimlane Diagram
 
@@ -183,9 +212,42 @@ sequenceDiagram
 
 ![image-20250628173935873](./README.assets/image-20250628173935873.png)
 
+### Component Implementation
+
+1. User Frontend
+   - Functionality: UI rendering and interaction
+   - Implementation: Android Studio (API 33); Build from scratch
+2. Camera/Gallery
+   - Functionality: Image capture/selection
+   - Implementation: Android Studio (API 33) and Gallery APIs
+3. Geo/Color Processor
+   - Functionality: Image correction/enhancement
+   - Implementation: Android Studio (API 33); Build from scratch
+4. Document/Form Handler
+   - Functionality: Workflow coordination
+   - Implementation: Android Studio (API 33); Build from scratch
+5. Frontend DB
+   - Functionality: Local data persistence
+   - Implementation: SQLite via Android Room
+6. Backend Server
+   - Functionality: API routing
+   - Implementation: Flask + Gunicorn
+7. Backend Worker
+   - Functionality: Async processing
+   - Implementation: Python threading
+8. Cache Server
+   - Functionality: Temporary data storage
+   - Implementation: Flask + Gunicorn + SQLite
+9. OCR Server
+   - Functionality: Text extraction
+   - Implementation: Flask + Gunicorn + CnOcr library
+10. Zhipu LLM (External Service)
+    - Functionality: Data enrichment
+    - Implementation: External API integration
+
 # APIs and Controller
 
-### 1. Frontend Modules (Function Calls)
+### Frontend Modules (Function Calls)
 Internal frontend APIs via function calls.
 
 #### Camera/Gallery Module
@@ -242,7 +304,7 @@ function saveFormData(formId: string, data: JSON): boolean
 function getFormData(formId: string): JSON
 ```
 
-### 2. Backend Server (Flask)
+### Backend Server (Flask)
 Main entry point for processing requests and status checks.
 
 #### Endpoint: `/api/process_document`
@@ -319,7 +381,7 @@ The differences are:
 - The input argument `image` is replaced with two encrypted JSON object: `document_data` and `form_data`, which are JSON objects after decryption. 
 - The results are an array of key-value pairs, with key being fields to be filled in `form_data` and value being either information found in `document_data` or null if cannot be determined. 
 
-### 3. Cache Server(Flask+SQLite)
+### Cache Server(Flask+SQLite)
 
 Stores encrypted processing results. Uses composite keys: `(client_id, sha256_key)`.
 
@@ -370,7 +432,7 @@ Stores encrypted processing results. Uses composite keys: `(client_id, sha256_ke
 | --------- | --------- | ------------------------- |
 | `cleared` | `Integer` | Number of entries cleared |
 
-### 4. OCR Server(CnOCR)
+### OCR Server(CnOCR)
 Performs text extraction.
 
 #### Endpoint: `/api/ocr/extract`
