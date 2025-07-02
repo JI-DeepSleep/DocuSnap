@@ -2,6 +2,8 @@
 
 This section outlines how to build and run the project, along with the **direct** third-party tools, libraries, SDKs, and APIs used.  
 
+https://github.com/JI-DeepSleep/DocuSnap-Frontend
+
 ### **Front-End (Android)**  
 Built with **Android Studio** targeting **Android 13 (API Level 33)**.  
 
@@ -467,9 +469,7 @@ Chinese/English OCR tool for text recognition.
 
 # View UI/UX
 
-# Team Roster
-
-## 👥 Team Roster
+# 👥 Team Roster
 
 This project is built by a collaborative team of five, each contributing unique expertise across image processing, machine learning, UI/UX, and backend infrastructure. Below is a list of our team members and roles:
 
