@@ -1,4 +1,6 @@
-# **The following api docs are obsolete. Do NOT follow them. They will be finalized around Jul 20. Please contact the man at wheel for each part for up-to-date info.**
+The `APIs and Controller -> Backend Server (Flask)` section is finalized, should be. 
+
+The backend part swimlane diagram in the `Model and Engin -> Data and Control Flow Diagram` is also finalized. 
 
 # Getting Started
 
@@ -97,15 +99,15 @@ sequenceDiagram
         User->>GeoColor: enhanceColors(correctedImage)
         GeoColor->>User: enhancedImage
         User->>Handler: processDocument(enhancedImage)
-        Handler->>Backend: /api/process_document<br>(sha256_A, image, client_id)
+        Handler->>Backend: /api/process<br>(type=doc, SHA256_A, content=encrypted_payload)
         
         Backend->>Handler: 202 Accepted (processing)
         Backend->>Worker: Start processing thread
         
         par Polling and Processing
             loop Polling
-                Handler->>Backend: /api/process_document<br>(sha256_A, client_id)
-                Backend->>Cache: /api/cache/query<br>(client_id, sha256_A, "document")
+                Handler->>Backend: /api/process<br>(type=doc, SHA256_A, has_content=false)
+                Backend->>Cache: /api/cache/query<br>(client_id, SHA256_A, "doc")
                 Cache->>Backend: 404 Not Found
                 Backend->>Handler: 202 Accepted (processing)
             end
@@ -114,17 +116,17 @@ sequenceDiagram
             OCR->>Worker: text
             Worker->>LLM: /api/llm/enrich
             LLM->>Worker: formatted_json
-            Worker->>Cache: /api/cache/store<br>(client_id, sha256_A, "document")
+            Worker->>Cache: /api/cache/store<br>(client_id, SHA256_A, "doc", data)
             Cache->>Worker: 201 Created
         end
         
-        Handler->>Backend: /api/process_document<br>(sha256_A, client_id)
-        Backend->>Cache: /api/cache/query<br>(client_id, sha256_A, "document")
+        Handler->>Backend: /api/process<br>(type=doc, SHA256_A, has_content=false)
+        Backend->>Cache: /api/cache/query<br>(client_id, SHA256_A, "doc")
         Cache->>Backend: 200 OK (data)
         Backend->>Handler: 200 OK (result)
         Handler->>FEDB: saveDocument(sha256_A, metadata)
-        Handler->>Backend: /api/clear<br>(client_id, sha256_A)
-        Backend->>Cache: /api/cache/clear<br>(client_id, sha256_A, "document")
+        Handler->>Backend: /api/clear<br>(client_id, SHA256_A)
+        Backend->>Cache: /api/cache/clear<br>(client_id, SHA256_A, "doc")
         Cache->>Backend: 200 OK (cleared:1)
         Backend->>Handler: 200 OK (cleared:1)
         Handler->>User: processComplete
@@ -141,15 +143,15 @@ sequenceDiagram
         User->>GeoColor: enhanceColors(correctedImage)
         GeoColor->>User: enhancedImage
         User->>Handler: processForm(enhancedImage, "formB")
-        Handler->>Backend: /api/process_form<br>(sha256_B, image, client_id)
+        Handler->>Backend: /api/process<br>(type=form, SHA256_B, content=encrypted_payload)
         
         Backend->>Handler: 202 Accepted (processing)
         Backend->>Worker: Start processing thread
         
         par Polling and Processing
             loop Polling
-                Handler->>Backend: /api/process_form<br>(sha256_B, client_id)
-                Backend->>Cache: /api/cache/query<br>(client_id, sha256_B, "form")
+                Handler->>Backend: /api/process<br>(type=form, SHA256_B, has_content=false)
+                Backend->>Cache: /api/cache/query<br>(client_id, SHA256_B, "form")
                 Cache->>Backend: 404 Not Found
                 Backend->>Handler: 202 Accepted (processing)
             end
@@ -158,17 +160,17 @@ sequenceDiagram
             OCR->>Worker: text
             Worker->>LLM: /api/llm/enrich
             LLM->>Worker: formatted_json
-            Worker->>Cache: /api/cache/store<br>(client_id, sha256_B, "form")
+            Worker->>Cache: /api/cache/store<br>(client_id, SHA256_B, "form", data)
             Cache->>Worker: 201 Created
         end
         
-        Handler->>Backend: /api/process_form<br>(sha256_B, client_id)
-        Backend->>Cache: /api/cache/query<br>(client_id, sha256_B, "form")
+        Handler->>Backend: /api/process<br>(type=form, SHA256_B, has_content=false)
+        Backend->>Cache: /api/cache/query<br>(client_id, SHA256_B, "form")
         Cache->>Backend: 200 OK (data)
         Backend->>Handler: 200 OK (result)
         Handler->>FEDB: saveFormData("formB", data)
-        Handler->>Backend: /api/clear<br>(client_id, sha256_B)
-        Backend->>Cache: /api/cache/clear<br>(client_id, sha256_B, "form")
+        Handler->>Backend: /api/clear<br>(client_id, SHA256_B)
+        Backend->>Cache: /api/cache/clear<br>(client_id, SHA256_B, "form")
         Cache->>Backend: 200 OK (cleared:1)
         Backend->>Handler: 200 OK (cleared:1)
         Handler->>User: processComplete
@@ -178,32 +180,32 @@ sequenceDiagram
     rect rgba(255,230,200,0.5)
         note over User: Fill Task C
         User->>Handler:fillForm("formB")
-        Handler->>Backend: /api/process_fill<br>(client_id, document_data, form_data)
+        Handler->>Backend: /api/process<br>(type=fill, content=encrypted_payload)
         
         Backend->>Handler: 202 Accepted (processing)
         Backend->>Worker: Start processing thread
         
         par Polling and Processing
             loop Polling
-                Handler->>Backend: /api/process_fill<br>(client_id)
-                Backend->>Cache: /api/cache/query<br>(client_id, "formB_sha256+docdb_sha256", "fill")
+                Handler->>Backend: /api/process<br>(type=fill, has_content=false)
+                Backend->>Cache: /api/cache/query<br>(client_id, "composite_sha", "fill")
                 Cache->>Backend: 404 Not Found
                 Backend->>Handler: 202 Accepted (processing)
             end
             
             Worker->>LLM: /api/llm/enrich
             LLM->>Worker: filled_form
-            Worker->>Cache: /api/cache/store<br>(client_id, "formB_sha256+docdb_sha256", "fill")
+            Worker->>Cache: /api/cache/store<br>(client_id, "composite_sha", "fill", data)
             Cache->>Worker: 201 Created
         end
         
-        Handler->>Backend: /api/process_fill<br>(client_id)
-        Backend->>Cache: /api/cache/query<br>(client_id, "formB_sha256+docdb_sha256", "fill")
+        Handler->>Backend: /api/process<br>(type=fill, has_content=false)
+        Backend->>Cache: /api/cache/query<br>(client_id, "composite_sha", "fill")
         Cache->>Backend: 200 OK (data)
         Backend->>Handler: 200 OK (result)
         Handler->>FEDB: updateDocumentData(sha256_A, updates)
-        Handler->>Backend: /api/clear<br>(client_id, "formB_sha256+docdb_sha256")
-        Backend->>Cache: /api/cache/clear<br>(client_id, "formB_sha256+docdb_sha256", "fill")
+        Handler->>Backend: /api/clear<br>(client_id, "composite_sha")
+        Backend->>Cache: /api/cache/clear<br>(client_id, "composite_sha", "fill")
         Cache->>Backend: 200 OK (cleared:1)
         Backend->>Handler: 200 OK (cleared:1)
         Handler->>User: processComplete
@@ -308,150 +310,240 @@ function saveFormData(formId: string, data: JSON): boolean
 function getFormData(formId: string): JSON
 ```
 
+Here's the revised API documentation with unified SHA256 naming, enhanced descriptions, examples, and consistent formatting:
+
+Based on your requirements, I've updated the documentation with the new result structures and renamed `doc_lib` to `file_lib`. Here's the revised documentation:
+
 ### Backend Server (Flask)
 Main entry point for processing requests and status checks.
 
-#### Endpoint: `/api/process_document`
-| **Request Parameters** | | ||
-| ---------------------- | ----------- | ----------------- | -------------------------------------------- |
-| `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier |
-| `sha256_key` | Body (JSON) | `String`| **Required** SHA256 hash of the document |
-| `image`| Body (JSON) | `String` (Base64) | **Optional** RSA-encrypted image data|
-| `encryption_key` | Body (JSON) | `String`| **Optional** User encryption key for results |
+#### Unified Processing Endpoint: `/api/process`
+Handles all document processing types (doc/form/fill) through a single interface.  
+**Request Body (JSON)**:
 
-**Validation Rules**:
-- If `image` is provided:
-1. `encryption_key` must be present (else `400`)
-2. Backend decrypts image using its private RSA key
-3. SHA256 of decrypted image must match `sha256_key` (else `400`)
+| Key           | Type                                                | Required | Description                                                  |
+| ------------- | --------------------------------------------------- | -------- | ------------------------------------------------------------ |
+| `client_id`   | String (UUID)                                       | Yes      | Client identifier                                            |
+| `type`        | String                                              | Yes      | Processing type: `"doc"`, `"form"`, or `"fill"`              |
+| `SHA256`      | String                                              | Yes      | SHA256 hash computed as per rules below                      |
+| `has_content` | Boolean                                             | Yes      | Indicates whether content payload is included                |
+| `content`     | String(after base64 then rsa of actual json string) | No       | Required when `has_content=true` - RSA and base64-encrypted payload (see structure) |
 
-| **Response Codes** | |
-| ------------------ | ------------------------- |
-| `200 OK` | Result available|
-| `202 Accepted` | Processing in progress|
-| `400 Bad Request`| Invalid input/missing key |
-| `404 Not Found`| SHA256 not recognized |
-| `500 Server Error` | Internal processing error |
+**SHA256 Computation**:
+```python
+SHA256(rsa_decryption(request.content))
+```
 
-**Returns** (Case 1: Result Available):
-| **Key**| **Type** | **Description** |
-| -------- | -------- | ------------------------- |
-| `status` | `String` | `"complete"`|
-| `result` | `String` | Encrypted with user's key |
+**Content Payload Structure** (After RSA decryption and then base64 decryption):
+```json
+{
+  "to_process": ["base64_img1", "base64_img2"],  // For doc/form
+  "to_process": form_obj,              // For fill
+  "aes_key": "user_aes_key_123",
+  "file_lib": {  // Renamed from doc_lib
+    "docs": [doc_obj_1, doc_obj_2, ...],
+    "forms": [form_obj_1, form_obj_2, ...]
+  }
+}
+```
 
-**Returns** (Case 2: Processing In Progress):
-| **Key**| **Type** | **Description** |
-| -------- | -------- | --------------- |
-| `status` | `String` | `"processing"`|
+**Validation**:
+1. `has_content=true` requires `content` field (else `400`)
+2. Computed SHA256 must match provided `SHA256` (else `400`)
+3. Backend decrypts `content` using private RSA key and then base64 decryption.
 
-**Returns** (Case 3: Error State):
-| **Key**| **Type** | **Description**|
-| -------- | -------- | -------------------------------------------------- |
-| `status` | `String` | `"error_processing"` or `"error_sha256_not_found"` |
-| `detail` | `String` | Error description|
+**Response**:
 
+- Always: `{"response": "AES-encrypted-base64-string"}`
+- Decrypted (first using AES and then base64) content structure:
+  ```json
+  {
+    "status": "processing|completed|error",
+    "error_message": "Description",  // Only for error status
+    "result": { ... }                // Only for completed status
+  }
+  ```
+
+**Result Structures**:
+```json
+// Doc type
+{
+  "title": "a few words",
+  "tags": ["array", "of", "words"],
+  "description": "a few sentences",
+  "kv": {
+    "key1": "value1",
+    "key2": "value2"  // Extracted key-value pairs
+  },
+  "related": [
+    {"type": "xxx", "resource_id": "xxx"}  // array of related docs
+  ]
+}
+
+// Form type
+{
+  "title": "a few words",
+  "tags": ["array", "of", "words"],
+  "description": "a few sentences",
+  "kv": {
+    "key1": "value1",
+    "key2": "value2"  // Extracted key-value pairs
+  },
+  "fields": ["field1", "field2"],
+  "related": [
+    {"type": "xxx", "resource_id": "xxx"}  // array of related docs
+  ]
+}
+
+// Fill type
+{
+  "field1": {
+    "value": "value1",
+    "source": {"type": "xxx", "resource_id": "xxx"}  // array of related docs
+  },
+  "field2": {
+    "value": "value2",
+    "source": {"type": "xxx", "resource_id": "xxx"}
+  }
+}
+```
+
+**Status Codes**:
+| Code | Description                                  |
+| ---- | -------------------------------------------- |
+| 200  | Result available (`status=completed`)        |
+| 202  | Processing in progress (`status=processing`) |
+| 400  | Invalid input/SHA256 mismatch                |
+| 404  | SHA256 not recognized                        |
+| 500  | Internal server error                        |
+
+**Example Request**:
+```json
+{
+  "client_id": "550e8400-e29b-41d4-a716-446655440000",
+  "type": "doc",
+  "SHA256": "9f86d081...b4b9a5",
+  "has_content": true,
+  "content": "RSA_ENCRYPTED_BASE64_DATA"
+}
+```
+
+**Example Response** (Decrypted):
+```json
+{
+  "status": "completed",
+  "result": {
+    "title": "Lease Agreement",
+    "tags": ["legal", "contract"],
+    "description": "Standard residential lease agreement for 12 months",
+    "kv": {
+      "landlord": "Jane Smith",
+      "tenant": "John Doe",
+      "term": "12 months"
+    },
+    "related": [
+      {"type": "form", "resource_id": "that form's uuid"}
+    ]
+  }
+}
+```
+
+---
 #### Endpoint: `/api/clear`
-| **Request Parameters** | | | |
-| ---------------------- | ----------- | --------------- | --------------------------------------- |
-| `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier|
-| `sha256_key` | Body (JSON) | `String`| **Optional** Specific document to clear |
+Clears processing results from the system.  
+**Request Body (JSON)**:
+| Key         | Type          | Required | Description                                     |
+| ----------- | ------------- | -------- | ----------------------------------------------- |
+| `client_id` | String (UUID) | Yes      | Client identifier                               |
+| `type`      | String        | No       | Processing type: `"doc"`, `"form"`, or `"fill"` |
+| `SHA256`    | String        | No       | Specific document hash to clear                 |
 
-| **Response Codes** ||
-| ------------------ | -------------------- |
-| `200 OK` | Clearance successful |
-| `400 Bad Request`| Missing client_id|
-| `500 Server Error` | Clearance failed |
+**Response**:
+```json
+{
+  "status": "ok"
+}
+```
 
-**Returns**:
-| **Key** | **Type**| **Description** |
-| --------- | --------- | --------------------------------------- |
-| `cleared` | `Integer` | Number of entries cleared |
-| `status`| `String`| `"all_cleared"` or `"specific_cleared"` |
+**Status Codes**:
 
-#### Endpoint: `/api/process_form`
+| Code | Description              |
+| ---- | ------------------------ |
+| 200  | Clearance successful     |
+| 400  | Missing client_id        |
+| 500  | Internal clearance error |
 
-The API interface is almost the same as `/api/process_document`, except that it is used for form parsing. 
-
-The differences are:
-
-- The results are not an array of key-value pairs, but an array of name of the fields that need to be filled. 
-
-#### Endpoint: `/api/process_fill`
-
-The API interface is almost the same as `/api/process_document`, except that it is used for filling a form given a document db. 
-
-The differences are:
-
-- The input argument `image` is replaced with two encrypted JSON object: `document_data` and `form_data`, which are JSON objects after decryption. 
-- The results are an array of key-value pairs, with key being fields to be filled in `form_data` and value being either information found in `document_data` or null if cannot be determined. 
-
-### Cache Server(Flask+SQLite)
-
-Stores encrypted processing results. Uses composite keys: `(client_id, sha256_key)`.
+---
+### Cache Server (Flask+SQLite)
+Stores and retrieves encrypted processing results using composite keys `(client_id, SHA256, type)`.
 
 #### Endpoint: `/api/cache/query`
-| **Request Parameters** | | ||
-| ---------------------- | ----------- | --------------- | -------------------------- |
-| `client_id`| Query Param | `String` (UUID) | Client identifier|
-| `sha256_key` | Query Param | `String`| SHA256 key of the document |
-| `type` | Query Param | `String` (document/form/fill) |  |
+Retrieves cached processing results.  
+**Query Parameters**:
+| Key         | Type          | Required | Description              |
+| ----------- | ------------- | -------- | ------------------------ |
+| `client_id` | String (UUID) | Yes      | Client identifier        |
+| `SHA256`    | String        | Yes      | Document hash            |
+| `type`      | String        | Yes      | `doc`, `form`, or `fill` |
 
-| **Response Codes** | |
-| ------------------ | ------------------- |
-| `200 OK` | Cache entry found |
-| `404 Not Found`| Cache entry missing |
+**Response**:
 
-**Returns** (Success):
-| **Key** | **Type** | **Description**|
-| ------- | -------- | ---------------- |
-| `data`| `String` | Encrypted result |
+```json
+// Success (200)
+{"data": "ENCRYPTED_RESULT_STRING"}
+// Not found (404)
+{"error": "Cache entry missing"}
+```
 
+---
 #### Endpoint: `/api/cache/store`
-| **Request Parameters** | | ||
-| ---------------------- | ----------- | --------------- | -------------------------- |
-| `client_id`| Body (JSON) | `String` (UUID) | Client identifier|
-| `sha256_key` | Body (JSON) | `String`| SHA256 key of the document |
-| `type` | Query Param | `String` (document/form/fill) |  |
-| `data` | Body (JSON) | `String`| Encrypted result to store|
+Stores processing results in cache.  
+**Request Body (JSON)**:
 
-| **Response Codes** ||
-| ------------------ | ------------------ |
-| `201 Created`| Cache entry stored |
+| Key         | Type          | Required | Description                                     |
+| ----------- | ------------- | -------- | ----------------------------------------------- |
+| `client_id` | String (UUID) | Yes      | Client identifier                               |
+| `type`      | String        | Yes      | Processing type: `"doc"`, `"form"`, or `"fill"` |
+| `SHA256`    | String        | Yes      | Document hash                                   |
+| `data`      | String        | Yes      | Encrypted result data                           |
 
-**Returns**: Empty body
+**Response**: `201 Created` (Empty body)
 
+---
 #### Endpoint: `/api/cache/clear`
-| **Request Parameters** | | | |
-| ---------------------- | ----------- | --------------- | --------------------------------------- |
-| `client_id`| Body (JSON) | `String` (UUID) | **Required** Client identifier|
-| `sha256_key` | Body (JSON) | `String`| **Optional** Specific document to clear |
-| `type` | Query Param | `String` (document/form/fill) |  |
+Clears cached entries.  
+**Request Body (JSON)**:
 
-| **Response Codes** ||
-| ------------------ | -------------------- |
-| `200 OK` | Clearance successful |
+| Key         | Type          | Required | Description                                     |
+| ----------- | ------------- | -------- | ----------------------------------------------- |
+| `client_id` | String (UUID) | Yes      | Client identifier                               |
+| `type`      | String        | No       | Processing type: `"doc"`, `"form"`, or `"fill"` |
+| `SHA256`    | String        | No       | Specific document hash to clear                 |
 
-**Returns**:
-| **Key** | **Type**| **Description** |
-| --------- | --------- | ------------------------- |
-| `cleared` | `Integer` | Number of entries cleared |
+**Response**:
+```json
+{
+  "cleared": 5,
+  "details": "Entries cleared"
+}
+```
 
-### OCR Server(CnOCR)
-Performs text extraction.
-
+---
+### OCR Server (CnOCR)
+Performs text extraction from images.  
 #### Endpoint: `/api/ocr/extract`
-| **Request Parameters** | | ||
-| ---------------------- | ----------- | ----------------- | ---------------------------- |
-| `image_data` | Body (JSON) | `String` (Base64) | Decrypted image from backend |
+**Request Body (JSON)**:
+| Key          | Type            | Required | Description     |
+| ------------ | --------------- | -------- | --------------- |
+| `image_data` | String (Base64) | Yes      | Decrypted image |
 
-| **Response Codes** ||
-| ------------------ | -------------- |
-| `200 OK` | Text extracted |
-
-**Returns**:
-| **Key** | **Type** | **Description**|
-| ------- | -------- | ------------------ |
-| `text`| `String` | Extracted raw text |
+**Response**:
+```json
+{
+  "text": "Extracted document text..."
+}
+```
+**Status Code**: `200 OK`
 
 ## Third-Party SDKs
 
