@@ -1,3 +1,7 @@
+<h1 style="color: red">README</h1>
+
+<p style="color: red">The following api docs are obsolete. Do NOT follow them. They will be finalized around Jul 20. Please contact the man at wheel for each part for up-to-date info. </p>
+
 # Getting Started
 
 This section outlines how to build and run the project, along with the **direct** third-party tools, libraries, SDKs, and APIs used.  
