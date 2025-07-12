@@ -8,6 +8,8 @@ This section outlines how to build and run the project, along with the **direct*
 
 https://github.com/JI-DeepSleep/DocuSnap-Frontend
 
+https://github.com/JI-DeepSleep/DocuSnap-Backend_and_Cache
+
 ### **Front-End (Android)**  
 Built with **Android Studio** targeting **Android 13 (API Level 33)**.  
 
