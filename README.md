@@ -356,6 +356,8 @@ SHA256(base64(actual json string)))
 
 **Response**:
 
+For valid requests (including those tasks with failed result): 
+
 - Always: `{"response": "AES(base64(actual json string))"}`
 - Decrypted (first using AES and then base64) content structure:
   ```json
@@ -366,7 +368,16 @@ SHA256(base64(actual json string)))
   }
   ```
 
+For invalid requests (including task not found):
+
+```json
+{
+    "error": "error description"
+}
+```
+
 **Result Structures**:
+
 ```json
 // Doc type
 {
@@ -454,6 +465,7 @@ SHA256(base64(actual json string)))
 #### Endpoint: `/api/clear`
 Clears processing results from the system.  
 **Request Body (JSON)**:
+
 | Key         | Type          | Required | Description                                     |
 | ----------- | ------------- | -------- | ----------------------------------------------- |
 | `client_id` | String (UUID) | Yes      | Client identifier                               |
