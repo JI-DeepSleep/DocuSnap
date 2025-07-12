@@ -356,27 +356,15 @@ SHA256(base64(actual json string)))
 
 **Response**:
 
-For valid requests (including those tasks with failed result): 
-
-- Always: `{"response": "AES(base64(actual json string))"}`
-- Decrypted (first using AES and then base64) content structure:
-  ```json
-  {
-    "status": "processing|completed|error",
-    "error_message": "Description",  // Only for error status
-    "result": { ... }                // Only for completed status
-  }
-  ```
-
-For invalid requests (including task not found):
-
 ```json
 {
-    "error": "error description"
+  "status": "processing|completed|error",
+  "error_message": "Description",  // Only for error status
+  "result": "AES(base64(actual json string))"    // Only for completed status, the content is 
 }
 ```
 
-**Result Structures**:
+**Result Structures (after decryption)**:
 
 ```json
 // Doc type
@@ -537,8 +525,7 @@ Clears cached entries.
 **Response**:
 ```json
 {
-  "cleared": 5,
-  "details": "Entries cleared"
+  "status": "ok"
 }
 ```
 
