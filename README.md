@@ -321,20 +321,22 @@ Main entry point for processing requests and status checks.
 Handles all document processing types (doc/form/fill) through a single interface.  
 **Request Body (JSON)**:
 
-| Key           | Type                                                | Required | Description                                                  |
-| ------------- | --------------------------------------------------- | -------- | ------------------------------------------------------------ |
-| `client_id`   | String (UUID)                                       | Yes      | Client identifier                                            |
-| `type`        | String                                              | Yes      | Processing type: `"doc"`, `"form"`, or `"fill"`              |
-| `SHA256`      | String                                              | Yes      | SHA256 hash computed as per rules below                      |
-| `has_content` | Boolean                                             | Yes      | Indicates whether content payload is included                |
-| `content`     | String(after base64 then rsa of actual json string) | No       | Required when `has_content=true` - RSA and base64-encrypted payload (see structure) |
+| Key           | Type                                    | Required | Description                                                  |
+| ------------- | --------------------------------------- | -------- | ------------------------------------------------------------ |
+| `client_id`   | String (UUID)                           | Yes      | Client identifier                                            |
+| `type`        | String                                  | Yes      | Processing type: `"doc"`, `"form"`, or `"fill"`              |
+| `SHA256`      | String                                  | Yes      | SHA256 hash computed as per rules below                      |
+| `has_content` | Boolean                                 | Yes      | Indicates whether content payload is included                |
+| `content`     | String(RSA(base64(actual json string))) | No       | Required when `has_content=true` - RSA(base64(actual json string)) |
 
 **SHA256 Computation**:
+
 ```python
-SHA256(rsa_decryption(request.content))
+SHA256(base64(actual json string)))
 ```
 
-**Content Payload Structure** (After RSA decryption and then base64 decryption):
+**Content Payload Structure** (After 1. RSA decryption and then 2. base64 decryption):
+
 ```json
 {
   "to_process": ["base64_img1", "base64_img2"],  // For doc/form
@@ -354,7 +356,7 @@ SHA256(rsa_decryption(request.content))
 
 **Response**:
 
-- Always: `{"response": "AES-encrypted-base64-string"}`
+- Always: `{"response": "AES(base64(actual json string))"}`
 - Decrypted (first using AES and then base64) content structure:
   ```json
   {
