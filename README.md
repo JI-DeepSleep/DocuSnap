@@ -327,21 +327,21 @@ Handles all document processing types (doc/form/fill) through a single interface
 | `type`        | String                                  | Yes      | Processing type: `"doc"`, `"form"`, or `"fill"`              |
 | `SHA256`      | String                                  | Yes      | SHA256 hash computed as per rules below                      |
 | `has_content` | Boolean                                 | Yes      | Indicates whether content payload is included                |
-| `content`     | String(RSA(base64(actual json string))) | No       | Required when `has_content=true` - RSA(base64(actual json string)) |
+| `content`     | String(AES(base64(actual json string))) | No       | Required when `has_content=true` - AES(base64(actual json string)) |
+| `aes_key`     | String(RSA(real_aes_key))               | No       | Required when `has_content=true` - RSA(real_aes_key)         |
 
 **SHA256 Computation**:
 
 ```python
-SHA256(base64(actual json string)))
+SHA256( content_string )
 ```
 
-**Content Payload Structure** (After 1. RSA decryption and then 2. base64 decryption):
+**Content Payload Structure** (After 1. AES decryption and then 2. base64 decryption):
 
 ```json
 {
   "to_process": ["base64_img1", "base64_img2"],  // For doc/form
   "to_process": form_obj,              // For fill
-  "aes_key": "user_aes_key_123",
   "file_lib": {  // Renamed from doc_lib
     "docs": [doc_obj_1, doc_obj_2, ...],
     "forms": [form_obj_1, form_obj_2, ...]
@@ -352,15 +352,16 @@ SHA256(base64(actual json string)))
 **Validation**:
 1. `has_content=true` requires `content` field (else `400`)
 2. Computed SHA256 must match provided `SHA256` (else `400`)
-3. Backend decrypts `content` using private RSA key and then base64 decryption.
+3. Backend decrypts `aes_key` using private RSA key to get the real aes key.
+4. Backend decrypts `content` using real aes key and then base64 decryption.
 
 **Response**:
 
 ```json
 {
   "status": "processing|completed|error",
-  "error_message": "Description",  // Only for error status
-  "result": "AES(base64(actual json string))"    // Only for completed status, the content is 
+  "error_detail": "Description",  // Only for error status
+  "result": "base64(AES(actual json string))"    // Only for completed status, the content is 
 }
 ```
 
@@ -410,13 +411,13 @@ SHA256(base64(actual json string)))
 ```
 
 **Status Codes**:
-| Code | Description                                  |
-| ---- | -------------------------------------------- |
-| 200  | Result available (`status=completed`)        |
-| 202  | Processing in progress (`status=processing`) |
-| 400  | Invalid input/SHA256 mismatch                |
-| 404  | SHA256 not recognized                        |
-| 500  | Internal server error                        |
+
+| Code | Description                                         |
+| ---- | --------------------------------------------------- |
+| 200  | Result available (`status=completed`)               |
+| 202  | Processing in progress (`status=processing`)        |
+| 400  | Invalid input/SHA256 mismatch/SHA256 not recognized |
+| 500  | Internal server error                               |
 
 **Example Request**:
 ```json
@@ -425,15 +426,17 @@ SHA256(base64(actual json string)))
   "type": "doc",
   "SHA256": "9f86d081...b4b9a5",
   "has_content": true,
-  "content": "RSA_ENCRYPTED_BASE64_DATA"
+  "aes_key": "rsa encrypted"
+  "content": "base64(AES(actual json string))"
 }
 ```
 
-**Example Response** (Decrypted):
+**Example Response**:
+
 ```json
 {
   "status": "completed",
-  "result": {
+  "result": {    //  Decrypted
     "title": "Lease Agreement",
     "tags": ["legal", "contract"],
     "description": "Standard residential lease agreement for 12 months",
