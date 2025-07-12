@@ -310,10 +310,6 @@ function saveFormData(formId: string, data: JSON): boolean
 function getFormData(formId: string): JSON
 ```
 
-Here's the revised API documentation with unified SHA256 naming, enhanced descriptions, examples, and consistent formatting:
-
-Based on your requirements, I've updated the documentation with the new result structures and renamed `doc_lib` to `file_lib`. Here's the revised documentation:
-
 ### Backend Server (Flask)
 Main entry point for processing requests and status checks.
 
