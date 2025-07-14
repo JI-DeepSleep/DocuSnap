@@ -340,7 +340,7 @@ SHA256( content_string )
 {
   "to_process": ["base64_img1", "base64_img2"],  // For doc/form
   "to_process": form_obj,              // For fill
-  "file_lib": {  // Renamed from doc_lib
+  "file_lib": {
     "docs": [doc_obj_1, doc_obj_2, ...],
     "forms": [form_obj_1, form_obj_2, ...]
   }
