@@ -325,7 +325,7 @@ Handles all document processing types (doc/form/fill) through a single interface
 | `type`        | String                                  | Yes      | Processing type: `"doc"`, `"form"`, or `"fill"`              |
 | `SHA256`      | String                                  | Yes      | SHA256 hash computed as per rules below                      |
 | `has_content` | Boolean                                 | Yes      | Indicates whether content payload is included                |
-| `content`     | String(AES(base64(actual json string))) | No       | Required when `has_content=true` - AES(base64(actual json string)) |
+| `content`     | String(base64(AES(actual_json_string))) | No       | Required when `has_content=true` - base64(AES(actual_json_string)) |
 | `aes_key`     | String(RSA(real_aes_key))               | No       | Required when `has_content=true` - RSA(real_aes_key)         |
 
 **SHA256 Computation**:
@@ -334,7 +334,7 @@ Handles all document processing types (doc/form/fill) through a single interface
 SHA256( content_string )
 ```
 
-**Content Payload Structure** (After 1. AES decryption and then 2. base64 decryption):
+**Content Payload Structure** (After 1. base64 decoding and then 2. AES decryption):
 
 ```json
 {
@@ -351,7 +351,7 @@ SHA256( content_string )
 1. `has_content=true` requires `content` field (else `400`)
 2. Computed SHA256 must match provided `SHA256` (else `400`)
 3. Backend decrypts `aes_key` using private RSA key to get the real aes key.
-4. Backend decrypts `content` using real aes key and then base64 decryption.
+4. Backend decrypts `content` using base64 decoding and then real aes key decryption.
 
 **Response**:
 
