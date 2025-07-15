@@ -257,7 +257,10 @@ sequenceDiagram
 
 # APIs and Controller
 
-### Frontend Modules (Function Calls)
+### Frontend Modules (Function Calls) 
+
+# THE FRONTEND DOC IS OBSOLETE!! DO NOT RELAY ON THIS!!!
+
 Internal frontend APIs via function calls.
 
 #### Camera/Gallery Module
