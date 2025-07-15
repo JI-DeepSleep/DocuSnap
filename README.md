@@ -315,7 +315,7 @@ function getFormData(formId: string): JSON
 ### Backend Server (Flask)
 Main entry point for processing requests and status checks.
 
-#### Unified Processing Endpoint: `/api/process`
+#### Unified Processing Endpoint: `<backend server URL prefix>/process`
 Handles all document processing types (doc/form/fill) through a single interface.  
 **Request Body (JSON)**:
 
@@ -375,8 +375,8 @@ SHA256( content_string )
     "key1": "value1",
     "key2": "value2"  // Extracted key-value pairs
   },
-  "related": [
-    {"type": "xxx", "resource_id": "xxx"}  // array of related docs
+  "related": [    // array of related docs
+    {"type": "xxx", "resource_id": "xxx"}
   ]
 }
 
@@ -390,16 +390,16 @@ SHA256( content_string )
     "key2": "value2"  // Extracted key-value pairs
   },
   "fields": ["field1", "field2"],
-  "related": [
-    {"type": "xxx", "resource_id": "xxx"}  // array of related docs
+  "related": [		// array of related docs
+    {"type": "xxx", "resource_id": "xxx"}  
   ]
 }
 
 // Fill type
-{
+{ // only include fields that has a match with file_lib it is okay that not all fields appear here
   "field1": {
     "value": "value1",
-    "source": {"type": "xxx", "resource_id": "xxx"}  // array of related docs
+    "source": {"type": "xxx", "resource_id": "xxx"}  // type is either doc or form, and resource_id is uuid
   },
   "field2": {
     "value": "value2",
@@ -451,7 +451,7 @@ SHA256( content_string )
 ```
 
 ---
-#### Endpoint: `/api/clear`
+#### Endpoint: `<backend server URL prefix>/clear`
 Clears processing results from the system.  
 **Request Body (JSON)**:
 
@@ -480,7 +480,9 @@ Clears processing results from the system.
 ### Cache Server (Flask+SQLite)
 Stores and retrieves encrypted processing results using composite keys `(client_id, SHA256, type)`.
 
-#### Endpoint: `/api/cache/query`
+The client (app) should not directly call this. This should be called by the backend server. 
+
+#### Endpoint: `<backend server URL prefix>/cache/query`
 Retrieves cached processing results.  
 **Query Parameters**:
 | Key         | Type          | Required | Description              |
@@ -499,7 +501,7 @@ Retrieves cached processing results.
 ```
 
 ---
-#### Endpoint: `/api/cache/store`
+#### Endpoint: `<backend server URL prefix>/cache/store`
 Stores processing results in cache.  
 **Request Body (JSON)**:
 
@@ -513,7 +515,7 @@ Stores processing results in cache.
 **Response**: `201 Created` (Empty body)
 
 ---
-#### Endpoint: `/api/cache/clear`
+#### Endpoint: `<backend server URL prefix>/cache/clear`
 Clears cached entries.  
 **Request Body (JSON)**:
 
@@ -533,7 +535,10 @@ Clears cached entries.
 ---
 ### OCR Server (CnOCR)
 Performs text extraction from images.  
-#### Endpoint: `/api/ocr/extract`
+
+The client (app) should not directly call this. This should be called by the backend server. 
+
+#### Endpoint: `<backend server URL prefix>/ocr/extract`
 **Request Body (JSON)**:
 | Key          | Type            | Required | Description     |
 | ------------ | --------------- | -------- | --------------- |
