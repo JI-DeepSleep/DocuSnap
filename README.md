@@ -8,6 +8,8 @@ This section outlines how to build and run the project, along with the **direct*
 
 https://github.com/JI-DeepSleep/DocuSnap-Frontend
 
+For backend, checkout the following repo:
+
 https://github.com/JI-DeepSleep/DocuSnap-Backend
 
 ### **Front-End (Android)**  
