@@ -1,6 +1,6 @@
-[submodule "DocuSnap-Backend"]
-	path = DocuSnap-Backend
-	url = git@github.com:JI-DeepSleep/DocuSnap-Backend.git
 [submodule "DocuSnap-Frontend"]
 	path = DocuSnap-Frontend
 	url = git@github.com:JI-DeepSleep/DocuSnap-Frontend.git
+[submodule "DocuSnap-Backend"]
+	path = DocuSnap-Backend
+	url = git@github.com:JI-DeepSleep/DocuSnap-Backend.git
