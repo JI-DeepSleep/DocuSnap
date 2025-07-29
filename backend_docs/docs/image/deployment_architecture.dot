@@ -1,0 +1,179 @@
+digraph DocuSnap_Backend_Deployment {
+    // 图形属性
+    rankdir=TB;
+    fontname="Noto Sans SC";
+    fontsize=16;
+    bgcolor="white";
+    margin=0.5;
+    
+    // 节点默认样式
+    node [shape=box, style="rounded,filled", fontname="Noto Sans SC", fontsize=14, margin=0.3, color="#333333"];
+    
+    // 边默认样式
+    edge [fontname="Noto Sans SC", fontsize=12, color="#666666"];
+    
+    // 标题
+    label="DocuSnap-Backend 部署架构图";
+    labelloc="t";
+    
+    // 客户端层
+    subgraph cluster_client_layer {
+        label="客户端层";
+        style="rounded,filled";
+        fillcolor="#F9F9F9";
+        margin=16;
+        
+        MobileApp [label="移动应用\n(iOS/Android)", fillcolor="#E6F2FF", shape=ellipse];
+        WebApp [label="Web应用\n(浏览器)", fillcolor="#E6F2FF", shape=ellipse];
+    }
+    
+    // 负载均衡层
+    subgraph cluster_load_balancer {
+        label="负载均衡层";
+        style="rounded,filled";
+        fillcolor="#E6F7FF";
+        margin=12;
+        
+        LoadBalancer [label="负载均衡器\n(Nginx)", fillcolor="#B3E0FF", shape=hexagon];
+    }
+    
+    // 应用服务器层
+    subgraph cluster_app_servers {
+        label="应用服务器层";
+        style="rounded,filled";
+        fillcolor="#F2E6FF";
+        margin=16;
+        
+        // 多个后端实例
+        Backend1 [label="DocuSnap-Backend 实例 1\n(Flask + Gunicorn)\nPython 3.9+", fillcolor="#E6CCFF"];
+        Backend2 [label="DocuSnap-Backend 实例 2\n(Flask + Gunicorn)\nPython 3.9+", fillcolor="#E6CCFF"];
+        Backend3 [label="DocuSnap-Backend 实例 3\n(Flask + Gunicorn)\nPython 3.9+", fillcolor="#E6CCFF"];
+    }
+    
+    // 数据存储层
+    subgraph cluster_data_storage {
+        label="数据存储层";
+        style="rounded,filled";
+        fillcolor="#E6FFE6";
+        margin=12;
+        
+        // 主缓存数据库
+        PrimaryDB [label="主缓存数据库\n(SQLite/文件系统)", fillcolor="#B3FFB3", shape=cylinder];
+        
+        // 共享文件系统
+        SharedFS [label="共享文件系统\n(NFS/EFS)", fillcolor="#B3FFB3", shape=cylinder];
+    }
+    
+    // 外部服务层
+    subgraph cluster_external_services {
+        label="外部服务层";
+        style="rounded,filled";
+        fillcolor="#FFF0E6";
+        margin=16;
+        
+        // OCR服务器
+        subgraph cluster_ocr_servers {
+            label="OCR 服务集群";
+            style="rounded,filled";
+            fillcolor="#FFE6CC";
+            margin=12;
+            
+            OCRServer1 [label="OCR 服务器 1\n(CnOCR)\nPython + PyTorch", fillcolor="#FFCC99", shape=component];
+            OCRServer2 [label="OCR 服务器 2\n(CnOCR)\nPython + PyTorch", fillcolor="#FFCC99", shape=component];
+        }
+        
+        // LLM服务
+        LLMService [label="智谱 AI 服务\n(外部 API)\nGLM 大语言模型", fillcolor="#FFD9E6", shape=ellipse, style="filled,dashed"];
+    }
+    
+    // 监控和日志层
+    subgraph cluster_monitoring {
+        label="监控和日志层";
+        style="rounded,filled";
+        fillcolor="#F0F0F0";
+        margin=12;
+        
+        Monitoring [label="监控系统\n(Prometheus + Grafana)", fillcolor="#D9D9D9"];
+        Logging [label="日志系统\n(ELK Stack)", fillcolor="#D9D9D9"];
+    }
+    
+    // 连接关系
+    MobileApp -> LoadBalancer [label="HTTPS"];
+    WebApp -> LoadBalancer [label="HTTPS"];
+    
+    LoadBalancer -> Backend1 [label="HTTP"];
+    LoadBalancer -> Backend2 [label="HTTP"];
+    LoadBalancer -> Backend3 [label="HTTP"];
+    
+    Backend1 -> PrimaryDB [label="SQLite连接"];
+    Backend2 -> PrimaryDB [label="SQLite连接"];
+    Backend3 -> PrimaryDB [label="SQLite连接"];
+    
+    Backend1 -> SharedFS [label="文件读写"];
+    Backend2 -> SharedFS [label="文件读写"];
+    Backend3 -> SharedFS [label="文件读写"];
+    
+    Backend1 -> OCRServer1 [label="HTTP API"];
+    Backend1 -> OCRServer2 [label="HTTP API"];
+    Backend2 -> OCRServer1 [label="HTTP API"];
+    Backend2 -> OCRServer2 [label="HTTP API"];
+    Backend3 -> OCRServer1 [label="HTTP API"];
+    Backend3 -> OCRServer2 [label="HTTP API"];
+    
+    Backend1 -> LLMService [label="HTTPS API"];
+    Backend2 -> LLMService [label="HTTPS API"];
+    Backend3 -> LLMService [label="HTTPS API"];
+    
+    Backend1 -> Monitoring [label="指标收集"];
+    Backend2 -> Monitoring [label="指标收集"];
+    Backend3 -> Monitoring [label="指标收集"];
+    
+    Backend1 -> Logging [label="日志收集"];
+    Backend2 -> Logging [label="日志收集"];
+    Backend3 -> Logging [label="日志收集"];
+    
+    OCRServer1 -> Monitoring [label="指标收集"];
+    OCRServer2 -> Monitoring [label="指标收集"];
+    OCRServer1 -> Logging [label="日志收集"];
+    OCRServer2 -> Logging [label="日志收集"];
+    
+    // 技术栈说明
+    subgraph cluster_tech_stack {
+        label="技术栈说明";
+        style="rounded,filled";
+        fillcolor="#FFFFEE";
+        margin=12;
+        
+        TechBackend [label="后端服务器: Python 3.9+, Flask 3.1.1, Gunicorn, cryptography", fillcolor="#FFFFCC", shape=note];
+        TechOCR [label="OCR 服务器: Python, CnOCR, PyTorch, Flask/FastAPI", fillcolor="#FFFFCC", shape=note];
+        TechLLM [label="LLM 服务: 智谱 AI (zhipuai 2.1.5), GLM 大语言模型", fillcolor="#FFFFCC", shape=note];
+        TechDB [label="数据存储: SQLite3, 共享文件系统 (NFS/EFS)", fillcolor="#FFFFCC", shape=note];
+        TechDevOps [label="DevOps: Nginx, Prometheus, Grafana, ELK Stack", fillcolor="#FFFFCC", shape=note];
+        
+        TechBackend -> TechOCR [style=invis];
+        TechOCR -> TechLLM [style=invis];
+        TechLLM -> TechDB [style=invis];
+        TechDB -> TechDevOps [style=invis];
+    }
+    
+    // 图例
+    subgraph cluster_legend {
+        label="图例";
+        style="rounded,filled";
+        fillcolor="white";
+        margin=8;
+        
+        legend_client [label="客户端", fillcolor="#E6F2FF", shape=ellipse];
+        legend_lb [label="负载均衡", fillcolor="#B3E0FF", shape=hexagon];
+        legend_server [label="服务器", fillcolor="#E6CCFF"];
+        legend_service [label="外部服务", fillcolor="#FFCC99", shape=component];
+        legend_cloud [label="云服务", fillcolor="#FFD9E6", shape=ellipse, style="filled,dashed"];
+        legend_storage [label="存储", fillcolor="#B3FFB3", shape=cylinder];
+        
+        legend_client -> legend_lb [style=invis];
+        legend_lb -> legend_server [style=invis];
+        legend_server -> legend_service [style=invis];
+        legend_service -> legend_cloud [style=invis];
+        legend_cloud -> legend_storage [style=invis];
+    }
+}

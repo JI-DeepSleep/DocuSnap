@@ -1,0 +1,104 @@
+digraph DocuSnap_Backend_Data_Flow {
+    // 图形属性
+    rankdir=LR;
+    fontname="Noto Sans SC";
+    fontsize=16;
+    bgcolor="white";
+    margin=0.5;
+    
+    // 节点默认样式
+    node [shape=box, style="rounded,filled", fontname="Noto Sans SC", fontsize=14, margin=0.3, color="#333333"];
+    
+    // 边默认样式
+    edge [fontname="Noto Sans SC", fontsize=12, color="#666666"];
+    
+    // 标题
+    label="DocuSnap-Backend 数据流程图";
+    labelloc="t";
+    
+    // 定义参与者
+    Client [label="客户端", fillcolor="#E6F2FF", shape=ellipse];
+    API [label="API 层\n(/process)", fillcolor="#B3E0FF"];
+    Cache [label="缓存数据库\n(SQLite)", fillcolor="#B3FFB3", shape=cylinder];
+    Queue [label="任务队列", fillcolor="#FFE6CC", shape=cylinder];
+    Worker [label="工作线程", fillcolor="#FFCC99"];
+    OCR [label="OCR 服务\n(CnOCR)", fillcolor="#F2E6FF", shape=component];
+    LLM [label="LLM 服务\n(智谱 AI)", fillcolor="#E6CCFF", shape=component];
+    
+    // 定义数据流
+    // 1. 客户端发送请求
+    Client -> API [label="1. 发送加密请求\n(RSA加密AES密钥+AES加密内容)"];
+    
+    // 2. API解密请求
+    API -> API [label="2. 解密请求\n(RSA解密AES密钥\nAES解密内容\n验证SHA256哈希)", style=dashed];
+    
+    // 3. 检查缓存
+    API -> Cache [label="3. 检查任务状态"];
+    Cache -> API [label="4. 返回任务状态"];
+    
+    // 5. 分支: 任务已存在或新任务
+    API -> Client [label="5a. 如果任务已存在\n返回任务状态/结果", style=dashed, color="#999999"];
+    
+    // 6. 创建新任务
+    API -> Cache [label="5b. 如果是新任务\n创建任务记录(status=processing)"];
+    API -> Queue [label="6. 添加任务到队列"];
+    API -> Client [label="7. 返回processing状态"];
+    
+    // 8. 工作线程处理
+    Queue -> Worker [label="8. 获取任务"];
+    
+    // 9. OCR处理
+    Worker -> OCR [label="9. 发送图像进行OCR处理"];
+    OCR -> Worker [label="10. 返回识别文本"];
+    
+    // 11. LLM处理
+    Worker -> Worker [label="11. 构建提示", style=dashed];
+    Worker -> LLM [label="12. 发送提示到LLM"];
+    LLM -> Worker [label="13. 返回处理结果"];
+    
+    // 14. 存储结果
+    Worker -> Cache [label="14. 更新任务状态和结果\n(status=completed)"];
+    
+    // 15. 客户端轮询
+    Client -> API [label="15. 轮询任务状态"];
+    API -> Cache [label="16. 获取任务状态/结果"];
+    Cache -> API [label="17. 返回任务状态/结果"];
+    
+    // 18. 加密响应
+    API -> API [label="18. AES加密结果", style=dashed];
+    API -> Client [label="19. 返回加密结果"];
+    
+    // 添加说明性注释
+    subgraph cluster_notes {
+        label="处理说明";
+        style="rounded,filled";
+        fillcolor="#FFFFEE";
+        margin=12;
+        
+        note1 [label="异步处理: 步骤8-14在后台异步执行，\n客户端可以随时轮询获取处理状态", fillcolor="#FFFFCC", shape=note];
+        note2 [label="并发处理: 多个工作线程可以同时处理不同任务，\nOCR处理使用ThreadPoolExecutor并行处理多图像", fillcolor="#FFFFCC", shape=note];
+        note3 [label="缓存机制: 相同任务(相同client_id+sha256+type)\n不会重复处理，直接返回缓存结果", fillcolor="#FFFFCC", shape=note];
+        
+        note1 -> note2 [style=invis];
+        note2 -> note3 [style=invis];
+    }
+    
+    // 图例
+    subgraph cluster_legend {
+        label="图例";
+        style="rounded,filled";
+        fillcolor="white";
+        margin=8;
+        
+        legend_client [label="外部系统", fillcolor="#E6F2FF", shape=ellipse];
+        legend_module [label="内部组件", fillcolor="#B3E0FF"];
+        legend_service [label="外部服务", fillcolor="#F2E6FF", shape=component];
+        legend_data [label="数据存储", fillcolor="#B3FFB3", shape=cylinder];
+        legend_internal [label="内部处理", style=dashed];
+        
+        legend_client -> legend_module [style=invis];
+        legend_module -> legend_service [style=invis];
+        legend_service -> legend_data [style=invis];
+        legend_data -> legend_internal [style=invis];
+    }
+}

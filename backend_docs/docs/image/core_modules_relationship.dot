@@ -1,0 +1,124 @@
+digraph DocuSnap_Backend_Core_Modules {
+    // 图形属性
+    rankdir=TB;
+    fontname="Noto Sans SC";
+    fontsize=16;
+    bgcolor="white";
+    margin=0.5;
+    
+    // 节点默认样式
+    node [shape=box, style="rounded,filled", fontname="Noto Sans SC", fontsize=14, margin=0.3, color="#333333"];
+    
+    // 边默认样式
+    edge [fontname="Noto Sans SC", fontsize=12, color="#666666"];
+    
+    // 标题
+    label="DocuSnap-Backend 核心模块关系图";
+    labelloc="t";
+    
+    // 任务处理模块
+    subgraph cluster_task_processing {
+        label="任务处理模块";
+        style="rounded,filled";
+        fillcolor="#E6F2FF";
+        margin=12;
+        
+        TaskQueue [label="task_queue\n任务队列", fillcolor="#B3E0FF", shape=cylinder];
+        WorkerProcess [label="worker_process()\n工作线程函数", fillcolor="#B3E0FF"];
+        ProcessTask [label="process_task()\n任务处理函数", fillcolor="#B3E0FF"];
+        
+        TaskQueue -> WorkerProcess [label="获取任务"];
+        WorkerProcess -> ProcessTask [label="执行处理"];
+    }
+    
+    // OCR处理模块
+    subgraph cluster_ocr_processing {
+        label="OCR 处理模块";
+        style="rounded,filled";
+        fillcolor="#FFE6CC";
+        margin=12;
+        
+        PerformOCR [label="perform_ocr_base64()\n单图像处理", fillcolor="#FFCC99"];
+        ImagesToText [label="images_to_text()\n多图像处理", fillcolor="#FFCC99"];
+        OCRSemaphore [label="ocr_semaphore\n并发控制", fillcolor="#FFCC99", shape=diamond];
+        
+        ImagesToText -> PerformOCR [label="并行调用"];
+        PerformOCR -> OCRSemaphore [label="限制并发"];
+    }
+    
+    // LLM处理模块
+    subgraph cluster_llm_processing {
+        label="LLM 处理模块";
+        style="rounded,filled";
+        fillcolor="#F2E6FF";
+        margin=12;
+        
+        CallLLM [label="call_llm()\nLLM API调用", fillcolor="#E6CCFF"];
+        PromptDoc [label="construct_prompt_doc()\n文档提示构建", fillcolor="#E6CCFF"];
+        PromptForm [label="construct_prompt_form()\n表单提示构建", fillcolor="#E6CCFF"];
+        PromptFill [label="construct_prompt_fill()\n填充提示构建", fillcolor="#E6CCFF"];
+        
+        PromptDoc -> CallLLM [label="提供提示"];
+        PromptForm -> CallLLM [label="提供提示"];
+        PromptFill -> CallLLM [label="提供提示"];
+    }
+    
+    // 安全加密模块
+    subgraph cluster_security {
+        label="安全加密模块";
+        style="rounded,filled";
+        fillcolor="#E6FFE6";
+        margin=12;
+        
+        RSADecrypt [label="rsa_decrypt_key()\nRSA解密", fillcolor="#B3FFB3"];
+        AESEncrypt [label="aes_encrypt()\nAES加密", fillcolor="#B3FFB3"];
+        AESDecrypt [label="aes_decrypt()\nAES解密", fillcolor="#B3FFB3"];
+        
+        RSADecrypt -> AESDecrypt [label="提供密钥"];
+    }
+    
+    // 缓存和数据持久化模块
+    subgraph cluster_cache {
+        label="缓存和数据持久化模块";
+        style="rounded,filled";
+        fillcolor="#FFECF2";
+        margin=12;
+        
+        InitDB [label="init_db()\n初始化数据库", fillcolor="#FFD9E6"];
+        WriteResult [label="write_result_to_cache()\n写入结果", fillcolor="#FFD9E6"];
+        WriteError [label="write_error_to_cache()\n写入错误", fillcolor="#FFD9E6"];
+        CleanupEntries [label="cleanup_old_entries()\n清理过期条目", fillcolor="#FFD9E6"];
+        
+        InitDB -> WriteResult [label="提供连接"];
+        InitDB -> WriteError [label="提供连接"];
+        InitDB -> CleanupEntries [label="提供连接"];
+    }
+    
+    // 模块间关系
+    ProcessTask -> ImagesToText [label="处理图像"];
+    ProcessTask -> PromptDoc [label="构建文档提示"];
+    ProcessTask -> PromptForm [label="构建表单提示"];
+    ProcessTask -> PromptFill [label="构建填充提示"];
+    ProcessTask -> CallLLM [label="调用LLM"];
+    ProcessTask -> WriteResult [label="存储结果"];
+    ProcessTask -> WriteError [label="存储错误"];
+    
+    WorkerProcess -> CleanupEntries [label="定期清理"];
+    
+    WriteResult -> AESEncrypt [label="加密结果"];
+    
+    // 图例
+    subgraph cluster_legend {
+        label="图例";
+        style="rounded,filled";
+        fillcolor="white";
+        margin=8;
+        
+        legend_function [label="函数", fillcolor="#B3E0FF"];
+        legend_data [label="数据结构", fillcolor="#FFCC99", shape=cylinder];
+        legend_control [label="控制结构", fillcolor="#B3FFB3", shape=diamond];
+        
+        legend_function -> legend_data [style=invis];
+        legend_data -> legend_control [style=invis];
+    }
+}
