@@ -11,3 +11,5 @@ His primary contributions to the project included serving as project manager, ha
 ## Minyang Qu
 
 ## Huijie Tang
+
+# Challenges

@@ -575,6 +575,6 @@ Chinese/English OCR tool for text recognition.
 
 # View UI/UX
 
-# 👥 Team Roster
+# Team Roster and Challenges
 
-[Team Roster and Individual Contribution](./team_roster.md)
+[Team Roster and Challenges](./roster_and_challenges.md)
