@@ -24,7 +24,7 @@ Built with **Android Studio** targeting **Android 13 (API Level 33)**.
 
 ### **Back-End (Flask)**  
 
-**Note: ** For a more detailed "Get Started", checkout the [backend repo](https://github.com/JI-DeepSleep/DocuSnap-Backend).
+**Note:** For a more detailed "Get Started", checkout the [backend repo](https://github.com/JI-DeepSleep/DocuSnap-Backend).
 
 Built with **Python**, using the following core dependencies:  
 
