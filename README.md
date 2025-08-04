@@ -576,6 +576,8 @@ Chinese/English OCR tool for text recognition.
 
 # View UI/UX
 
+https://github.com/JI-DeepSleep/DocuSnap-Frontend/blob/main/README.md
+
 # Team Roster and Challenges
 
 [Team Roster and Challenges](./roster_and_challenges.md)
