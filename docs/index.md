@@ -1,8 +1,4 @@
-# DocuSnap
-
-Welcome to the comprehensive documentation for DocuSnap, a document processing and form automation system.
-
-## About DocuSnap
+# About DocuSnap
 
 DocuSnap is a comprehensive document processing and form automation system that combines mobile document scanning with intelligent backend processing. The system consists of two main components:
 

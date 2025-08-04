@@ -6,6 +6,8 @@ His primary contributions to the project included serving as project manager, ha
 
 ## Jingjia Peng
 
+Her primary contributions to the project included serving as the project’s chief UI/UX designer and frontend developer, leading the Android client’s design and implementation. As the **UI/UX designer**, she took ownership of task assignments for interface development, prototyping the app’s visual and interaction design using [Canva whiteboard](https://www.canva.cn/design/DAGtJNhpjDg/sxc4X2GD4eNQcHtYeQHYBg/edit?utm_content=DAGtJNhpjDg&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) and [web-based tools](https://docusnap-mock-ui.lovable.app/) to establish a user-friendly foundation. Transitioning to **frontend development**, she built the frontend framework from the ground up, structuring clean interfaces between UI controllers and core functionalities—enabling seamless collaboration for her teammates. She transplanted and refined the workflow based on usability feedback, ensuring intuitive navigation. Her **feature implementations** included frequently used information recommendations, PIN protection for security, and tight integration of local databases and backend calls with responsive UI controls. By bridging design and engineering, she ensured the final product was both visually polished and functionally robust.
+
 ## Ziming Zhou
 
 ## Minyang Qu
