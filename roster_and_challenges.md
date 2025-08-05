@@ -10,6 +10,12 @@ Her primary contributions to the project included serving as the project’s chi
 
 ## Ziming Zhou
 
+Ziming Zhou primarily contributed to the design and implementation of the in-app job management system. He developed the JobPollingService, which orchestrates background processing of document-related tasks such as scanning, parsing, and autofill. This service continuously polls the backend for job status updates and manages the full lifecycle of jobs across all supported types, including "doc", "form", and "fill". Zhou also implemented the local persistence layer using Android’s Room database, defining core entities such as JobEntity, DocumentEntity, and FormEntity, along with their corresponding DAOs to ensure robust, searchable local storage.
+
+From a system design perspective, he played a central role in shaping the app’s modular architecture, enforcing a clean separation between UI, ViewModel, Repository, and Backend layers. He also managed the communication and data synchronization between the asynchronous polling system and the local database to ensure responsiveness and consistency under variable network conditions.
+
+In addition, Zhou authored comprehensive documentation for both the frontend and backend systems to support onboarding, collaboration, and long-term maintainability ([Frontend Docs](https://ji-deepsleep.github.io/DocuSnap-Frontend/) · [Backend Docs](https://ji-deepsleep.github.io/DocuSnap-Backend/)).
+
 ## Minyang Qu
 
 His core contribution was developing the geometric processing module in pure Kotlin for Android, enabling document standardization for downstream analysis. He implemented a custom automatic corner detector, designed an interactive manual adjustment interface with draggable corners, and built the perspective correction pipeline. This self-contained module formed the foundation for all document preprocessing in the application while optimizing for mobile performance constraints.
